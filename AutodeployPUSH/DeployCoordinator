@@ -1,0 +1,84 @@
+param(
+$ServerName,
+$BUILDNUMBER,
+$usernameVariable,
+$passwordVariable
+)
+
+Write-Host "======================================================================================="
+Write-Host "Connecting to the server $ServerName"
+Write-Host "======================================================================================="
+$Password = $passwordVariable | ConvertTo-SecureString -AsPlainText -Force
+$creddentials = New-Object System.Management.Automation.PSCredential -ArgumentList $usernameVariable, $Password
+
+Invoke-Command -ComputerName $ServerName -Authentication Basic -credential $creddentials -ArgumentList $BUILDNUMBER -ScriptBlock {
+
+param(
+$BUILDNUMBER
+)
+
+$folderCoordinator='C:\inetpub\wwwroot\Push\Coordinator'
+$folderDistrib='C:\Distrib'
+
+Write-Host "======================================================================================="
+Write-Host "Create backup"
+Write-Host "======================================================================================="
+$PatchBackup='C:\backup'
+$Data=(Get-date -Format yyyyMMdd)
+$PathArch="$folderCoordinator\*"
+$NewfolderArch=New-Item -ItemType directory -Force -Path $PatchBackup\$Data-$BUILDNUMBER\Coordinator|where {$_.Name -Match "$Data"}|foreach {$_.Name}
+copy-item -Force $PathArch -recurse  -destination  $PatchBackup\$Data-$BUILDNUMBER\Coordinator -exclude "Logs", "LogsETL"
+
+Write-Host "======================================================================================="
+Write-Host "Create a folder for the distribution"
+Write-Host "======================================================================================="
+
+$NewfolderArch=New-Item -Force -ItemType directory -Path $folderDistrib\$Data-$BUILDNUMBER|where {$_.Name -Match "$Data"}|foreach {$_.Name}
+
+Write-Host "======================================================================================="
+Write-Host "Ignoring SSL certificate"
+Write-Host "======================================================================================="
+add-type @"
+    using System.Net;
+    using System.Security.Cryptography.X509Certificates;
+    public class TrustAllCertsPolicy : ICertificatePolicy {
+        public bool CheckValidationResult(
+            ServicePoint srvPoint, X509Certificate certificate,
+            WebRequest request, int certificateProblem) {
+            return true;
+        }
+    }
+"@
+
+[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+
+Write-Host "======================================================================================="
+Write-Host "Download the supply from artifactory"
+Write-Host "======================================================================================="
+$apiKey = "KEY"
+$resource = "https://artifactory.ru/push-generic-local/patch_$BUILDNUMBER.zip"
+Invoke-RestMethod -Method Get -Uri $resource -Header @{ "X-ApiKey" = $apiKey } -outFile $folderDistrib\patch_$BUILDNUMBER.zip
+
+Write-Host "======================================================================================="
+Write-Host "Unarchive the delivery"
+Write-Host "======================================================================================="
+expand-archive -path $folderDistrib\patch_$BUILDNUMBER.zip -destinationpath $folderDistrib\$Data-$BUILDNUMBER\
+
+Write-Host "======================================================================================="
+Write-Host "Stop Service IIS"
+Write-Host "======================================================================================="
+stop-service "W3SVC"
+
+Write-Host "Wait 15 sec"
+Wait-Event -Timeout 15
+
+Write-Host "======================================================================================="
+Write-Host "Remove old file"
+Write-Host "======================================================================================="
+get-childitem $folderCoordinator\*|Remove-Item -recurse -force -Exclude "Logs", "uploads", "Uploads", "Web.config", "NLog.config", "LogsETL"
+
+Write-Host "======================================================================================="
+Write-Host "Copy new file"
+Write-Host "======================================================================================="
+copy-item -Force -recurse $folderDistrib\$Data-$BUILDNUMBER\patch_$BUILDNUMBER\Coordinator\* -destination $folderCoordinator\
+}

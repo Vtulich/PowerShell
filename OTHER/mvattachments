@@ -1,0 +1,35 @@
+﻿#Мапим диск с папкой в которой надо сравнить файлы
+$S = New-Object -ComObject WScript.Network 
+$hostname=$S.MapNetworkDrive( "S:", "\\hostname\c$\inetpub\wwwroot\Push\Coordinator\Uploads\attachments", "true" )
+
+#Указываем путь до папки в которой надо сравнить файлы на локал хосте
+$hostname1= "C:\inetpub\wwwroot\Push\Coordinator\Uploads\attachments"
+
+#Парсим содержимое папок
+$path1 = get-childitem -path $hostname1 -recurse
+$path2 = get-childitem -path S:\ -recurse
+
+#Сравниваем содержимое двух папок и выводим полученную разницу
+$mv = compare-object $path1 $path2
+
+#Если разница не найдена "null", тогда отмапливаем диск и выходим во измежании выполнении след.пункта
+if($mv -eq $null)
+{
+$S.RemoveNetworkDrive( "S:" )
+exit
+}
+
+#Если разница найдена, преобразовываем полученную информацию для получения полного пути до файлов
+else{
+[array]$path3=@()
+$mv.InputObject|foreach {
+$mvname = $_
+$path3 += $path2|Where-Object{$_.name -eq $mvname}
+}
+
+#Копируем полученную разницу в локальную папку
+Copy-Item -Path $path3.fullname -Destination $hostname1
+
+#Отмапливаем диск
+$S.RemoveNetworkDrive( "S:" )
+}

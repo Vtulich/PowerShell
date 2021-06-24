@@ -1,0 +1,41 @@
+node ('push-windows'){
+    catchError {
+        
+    withCredentials([usernamePassword(credentialsId: 'PASSWORD', passwordVariable: 'PasswordServer', usernameVariable: 'UserNameServer')]) {
+
+    if (env.HostService == '-')
+	{
+	echo '==================================================================='
+	echo 'Service not selected'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\rolbackService.ps1 -ServerName %HostService% -NameArchive %archive% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	
+	
+	if (env.HostCoordinatorNode1 == '-')
+	{
+	echo '==================================================================='
+	echo 'Node1 not selected'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\rolbackCoordinator.ps1 -ServerName %HostCoordinatorNode1% -NameArchive %archive% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	
+	if (env.HostCoordinatorNode2 == '-')
+	{
+	echo '==================================================================='
+	echo 'Node2 not selected'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\rolbackCoordinator.ps1 -ServerName %HostCoordinatorNode2% -NameArchive %archive% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+    }
+    }
+}

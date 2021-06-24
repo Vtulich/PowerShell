@@ -1,0 +1,104 @@
+﻿#Удаляем файл
+Remove-Item C:\BartStop\*.txt -Force
+
+##Конектимся к почте, ищем необходимую папку, парсим ее attach на item и сохраняем в указанную папку
+$outlook = New-Object -comobject outlook.application
+$mapi = $outlook.GetNamespace("MAPI")
+$folder = $mapi.GetDefaultFolder(6)
+$item = $folder.Folders|Where-Object {$_.Name -eq "BartStop"}
+$GFolder = "C:\BartStop"
+IF ((Test-Path -Path $GFolder) -eq $false){New-Item -Path $GFolder -ItemType Directory -Force}
+$filepath = "$GFolder"
+$lastobject = $item.Items|Sort-Object -Property SentOn|Select-Object -Last 1
+$dateitem = ($item.Items|Select-Object -Property SentOn|Select-Object -Last 1).SentOn.tostring() -split " "|select-Object -first 1
+##Если текущая дата не совпадает с датой полученного файла, тогда выходим
+if ($dateitem -ne (get-date -Format dd.MM.yyyy))
+{
+exit
+}
+$lastobject| foreach {
+   $_.attachments|foreach {
+    Write-Host $_.filename
+    $a = $_.filename
+    If ($a.Contains("txt")) {
+    $_.saveasfile((Join-Path $filepath "$a"))
+   }
+  }
+}
+
+##получаем содержимое файла
+$patchdel = "C:\BartStop\*.txt"
+[array]$param = (Get-Content -Path $patchdel)
+
+##Коннектимся к базе и выполняем скрипт
+$DBName = "SID"
+$DBUser = "username"
+$DBPassword = "password"
+
+foreach ($i in $param){
+[System.Reflection.Assembly]::LoadWithPartialName("System.Data.OracleClient")
+$SqlConnection = New-Object System.Data.OracleClient.OracleConnection
+$SqlConnection.ConnectionString = "Data Source=$DBName; uid=$DBUser; pwd=$DBPassword"
+$SqlConnection.Open()
+$SqlCmd = New-Object System.Data.OracleClient.OracleCommand
+$SqlCmd.CommandText ="
+declare
+  v_List varchar2(32000);
+  v_Line varchar2(256);
+  v_t_id varchar2(256);
+  v_P integer;
+  v_D integer;
+  v_Line_No integer;
+v_sql_text varchar2(2000);
+  begin
+  v_List :='
+  $i
+  ';
+v_P := 1;
+  v_Line_No := 0;
+  while v_P > 0 loop
+    v_P := instr(v_List, chr(10));
+    if v_P <= 0 then
+      v_P := instr(v_List, chr(13));
+      if v_P <= 0 then
+        exit;
+      end if;
+    end if;
+    v_Line := trim(substr(v_List, 1, v_P - 1));
+    v_List := trim(substr(v_List, v_P + 1));
+    v_Line := trim(replace(replace(replace(v_Line, chr(10), ''), chr(13), ''), ',', ''));
+    if v_Line is not null then
+      v_Line_No := v_Line_No + 1;
+      v_D := instr(v_Line, ' ');
+      if v_D > 0 then
+        v_Line := trim(substr(v_Line, 1, v_D - 1));
+      end if;
+    
+      v_t_id := Upper(v_Line);
+begin     
+  INSERT INTO GFO_CASHOUT (CUID) VALUES (v_t_id);
+  commit;
+  exception when others 
+    then dbms_output.put_line('Ошибка при вставке CUID '||v_t_id);
+end; 
+    end if; 
+  end loop;  
+end;
+"
+$SqlCmd.Connection = $SqlConnection
+$SqlAdapter = New-Object System.Data.OracleClient.OracleDataAdapter
+$SqlAdapter.SelectCommand = $SqlCmd
+$DataTable = New-Object System.Data.DataTable
+$SqlAdapter.Fill($DataTable)
+$SqlConnection.Close()
+}
+
+##Отправляем письмо о блокировке клиентов
+$From = "BarT-stop@domain.ru"
+$To ="name@domain"
+$Cc = "name@domain", "name@domain"
+$Subject = "BarT-stop"
+$Body = "Указанные пользователи заблокированы"
+$SMTPServer = "mxs.domain.ru"
+Send-MailMessage -From $From -to $To -Cc $Cc -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8

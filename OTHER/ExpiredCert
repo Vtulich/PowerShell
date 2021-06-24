@@ -1,0 +1,151 @@
+﻿$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="name@domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}
+
+$Username = 'username'
+$Password = 'password'
+$pass = ConvertTo-SecureString -AsPlainText $Password -Force
+$Cred = New-Object System.Management.Automation.PSCredential -ArgumentList $Username,$pass
+$Server = "hostname.domain.ru"
+$Cert = Invoke-Command -ComputerName $Server -Authentication Basic -credential $Cred -ScriptBlock{
+Get-ChildItem -Path Cert:\LocalMachine\My -DnsName hostname.domain.ru -ExpiringInDays 20
+}
+if ($Cert -ne $null)
+{
+$From = "certificatexpired@domain.ru"
+$To ="mxsmtp.domain.ru"
+$Subject = "Certificate expired " +$Server
+$Body = $Cert
+$SMTPServer = "mxsmtp.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8 
+}

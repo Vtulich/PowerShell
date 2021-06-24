@@ -1,0 +1,192 @@
+node ('push-windows'){
+    catchError {
+    
+    echo '==================================================================='    
+    stage 'download project'
+    echo '==================================================================='
+    checkout([$class: 'GitSCM', branches: [[name: '*/brunch_dev_from_244']], doGenerateSubmoduleConfigurations: false, extensions: [], gitTool: 'Default', submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'jenkins-clone', url: 'ssh://git@GITNAME/push/server.git']]])
+    echo '==================================================================='
+    echo 'end download project'
+    echo '==================================================================='
+    
+    echo '==================================================================='
+    stage 'build project'
+    echo '==================================================================='
+    bat 'powershell -nologo -noninteractive -windowStyle hidden -command "C:\\scripts\\nugetupdate.ps1"'
+    bat '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild.exe" C:\\Jenkins\\workspace\\push_build\\*.MessageService.sln /p:Configuration=Release /p:Platform="x64" /p:ProductVersion=1.0.0 /p:VisualStudioVersion=15.0 /p:DeployOnBuild=true /p:PublishProfile=C:\\Jenkins\\workspace\\push_build\\*.MessageService.Portal\\Properties\\PublishProfiles\\publish.pubxml'
+    bat 'mkdir %WORKSPACE%\\patch_%BUILD_NUMBER%'
+    bat 'powershell -command "C:\\scripts\\buildproject.ps1"'
+    echo '==================================================================='
+    echo 'end build project'
+    echo '==================================================================='
+    
+    echo '==================================================================='
+    stage 'upload artifactory'
+    echo '==================================================================='
+    withCredentials([usernamePassword(credentialsId: 'PASSWORD', passwordVariable: 'ArtifactoryUploadPassword', usernameVariable: 'ArtifactoryUploadUser')]) {
+    def server = Artifactory.newServer('http://artifactory.ru/artifactory/', ArtifactoryUploadUser, ArtifactoryUploadPassword)
+    def uploadSpec = """{ 
+      "files": [
+      {
+      "pattern": "${WORKSPACE}\\patch_${BUILD_NUMBER}.zip",
+      "target": "push-generic-local/"
+      }
+      ]
+    }"""
+    def buildInfo = server.upload(uploadSpec)
+    server.publishBuildInfo(buildInfo)
+    }
+    echo '==================================================================='
+    echo 'end upload artifactory'
+    echo '==================================================================='
+    
+    echo '==================================================================='
+    stage 'DB scripts'
+    echo '==================================================================='
+    if (env.UserNameShemeTemplates == '-')
+	{
+	echo '==================================================================='
+	echo 'Not selected script for DB Templates'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\sqlquerytemplates.ps1 -SqlQueryTemplates %SqlQueryTemplates% -UserNameShemeTemplates %UserNameShemeTemplates%'
+	}
+
+    if (env.UserNameShemeSubscriber == '-')
+	{
+	echo '==================================================================='
+	echo 'Not selected script for DB Subscriber'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\sqlquerysubscriber.ps1 -SqlQuerySubscriber %SqlQuerySubscriber% -UserNameShemeSubscriber %UserNameShemeSubscriber%'
+	}
+
+    if (env.UserNameShemeTransport == '-')
+	{
+	echo '==================================================================='
+	echo 'Not selected script for DB Transport'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\sqlquerytransport.ps1 -SqlQueryTransport %SqlQueryTransport% -UserNameShemeTransport %UserNameShemeTransport%'
+	}
+	echo '==================================================================='
+    echo 'end DB scripts'
+    echo '==================================================================='
+    
+    echo '==================================================================='
+    stage 'deploy patch'
+    echo '==================================================================='
+    withCredentials([usernamePassword(credentialsId: '8fce9753-3071-44f6-bc28-e93d4f942c94', passwordVariable: 'PasswordServer', usernameVariable: 'UserNameServer')]) {
+	if (env.HostCoordinatorNode1 == '-')
+	{
+	echo '==================================================================='
+	echo 'Node1 not selected'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\DeployCoordinator.ps1 -ServerName %HostCoordinatorNode1% -BUILDNUMBER %BUILD_NUMBER% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	
+	if (env.HostCoordinatorNode2 == '-')
+	{
+	echo '==================================================================='
+	echo 'Node2 not selected'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\DeployCoordinator.ps1 -ServerName %HostCoordinatorNode2% -BUILDNUMBER %BUILD_NUMBER% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	
+	if (env.StopStub == 'YES')
+	{
+	bat 'powershell -command C:\\scripts\\stopStub.ps1 -ServerName %HostService% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	else
+	{
+	echo '==================================================================='
+	echo 'Not LOAD,Stub not stoped'
+	echo '==================================================================='
+	}
+	
+	if (env.HostService == '-')
+	{
+	echo '==================================================================='
+	echo 'Service not selected'
+	echo '==================================================================='
+	}
+	else
+	{
+    bat 'powershell -command C:\\scripts\\DeployService.ps1 -ServerName %HostService% -BUILDNUMBER %BUILD_NUMBER% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	
+    if (env.StopStub == 'YES')
+	{
+	bat 'powershell -command C:\\scripts\\startStub.ps1 -ServerName %HostService% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	else
+	{
+	echo '==================================================================='
+	echo 'Not LOAD,Stub not started'
+	echo '==================================================================='
+	}
+	echo '==================================================================='
+    echo 'end deploy patch'
+    echo '==================================================================='
+    
+    echo '==================================================================='
+    stage 'start service&IIS'
+    echo '==================================================================='
+	if (env.HostService != '-')
+	{
+	bat 'powershell -command C:\\scripts\\startService.ps1 -ServerName %HostService% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	else
+	{
+	echo '==================================================================='
+	echo 'Service not selected'
+	echo '==================================================================='
+    }
+	
+	if (env.HostCoordinatorNode1 != '-')
+	{
+	bat 'powershell -command C:\\scripts\\startCoordinator.ps1 -ServerName %HostCoordinatorNode1% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	else
+	{
+	echo '==================================================================='
+	echo 'Node1 not selected'
+	echo '==================================================================='
+    }
+	
+	if (env.HostCoordinatorNode2 != '-')
+	{
+	bat 'powershell -command C:\\scripts\\startCoordinator.ps1 -ServerName %HostCoordinatorNode2% -passwordVariable %PasswordServer% -usernameVariable %UserNameServer%'
+	}
+	else
+	{
+	echo '==================================================================='
+	echo 'Node2 not selected'
+	echo '==================================================================='
+    }
+    echo '==================================================================='
+    echo 'end start service&IIS'
+    echo '==================================================================='
+    
+    echo '==================================================================='
+    stage 'delete PushBuild'
+    echo '==================================================================='
+    bat 'powershell -command C:\\scripts\\RemoveWorkspaceBuild.ps1'
+    echo '==================================================================='
+    echo 'end delete PushBuild'
+    echo '==================================================================='
+}
+}
+}

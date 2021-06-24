@@ -1,0 +1,109 @@
+param
+(
+$SqlQuerySubscriber,
+$UserNameShemeSubscriber
+)
+
+##### препрод
+if($UserNameShemeSubscriber -eq "SIDBD")
+{
+$UserNameShemeSubscriber = @{UserNameSubscriber = 'PUSH_SUBSCRIBER_MASTER'; PasswordDBSubscriber = 'PASSWORD'; HostDBSubscriber = 'HOSTNAME'; UserNameShemeSubscriber = 'SIDBD'}
+
+$Subscriber1=$UserNameShemeSubscriber.UserNameSubscriber
+$Subscriber2=$UserNameShemeSubscriber.PasswordDBSubscriber
+$Subscriber3=$UserNameShemeSubscriber.HostDBSubscriber
+$Subscriber4=$UserNameShemeSubscriber.UserNameShemeSubscriber
+
+Foreach ($QuerySubscriber in [Array]$SqlQuerySubscriber -split ","){
+
+[Array]$ScriptsSubscriber = Get-ChildItem -Path "C:\Jenkins\workspace\push_build\*.MessageService.SqlScripts\$QuerySubscriber"
+[Array]$ScriptsSubscriber.FullName
+
+Foreach ($SelectSubscriber in [Array]$ScriptsSubscriber.FullName){
+
+C:\app\client\Администратор\product\12.2.0\client_1\sqlplus.exe $Subscriber1/$Subscriber2@"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$Subscriber3)(PORT=1521))(CONNECT_DATA=(UR=A)(SERVICE_NAME=$Subscriber4)))" @$SelectSubscriber
+
+}
+}
+}
+else
+{
+}
+
+##### - LOAD2
+if($UserNameShemeSubscriber -eq "SIDBD")
+{
+$UserNameShemeSubscriber = @{UserNameSubscriber = 'PUSH_SUBSCRIBER_MASTER'; PasswordDBSubscriber = 'PASSWORD'; HostDBSubscriber = 'HOSTBD'; UserNameShemeSubscriber = 'SIDBD'}
+
+$Subscriber1=$UserNameShemeSubscriber.UserNameSubscriber
+$Subscriber2=$UserNameShemeSubscriber.PasswordDBSubscriber
+$Subscriber3=$UserNameShemeSubscriber.HostDBSubscriber
+$Subscriber4=$UserNameShemeSubscriber.UserNameShemeSubscriber
+
+Foreach ($QuerySubscriber in [Array]$SqlQuerySubscriber -split ","){
+
+[Array]$ScriptsSubscriber = Get-ChildItem -Path "C:\Jenkins\workspace\push_build\*.MessageService.SqlScripts\$QuerySubscriber"
+[Array]$ScriptsSubscriber.FullName
+
+Foreach ($SelectSubscriber in [Array]$ScriptsSubscriber.FullName){
+
+C:\app\client\Администратор\product\12.2.0\client_1\sqlplus.exe $Subscriber1/$Subscriber2@"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$Subscriber3)(PORT=1521))(CONNECT_DATA=(UR=A)(SERVICE_NAME=$Subscriber4)))" @$SelectSubscriber
+
+}
+}
+}
+else
+{
+}
+
+#####
+if($UserNameShemeSubscriber -eq "SIDBD")
+{
+$UserNameShemeSubscriber = @{UserNameSubscriber = 'PUSH_SUBSCRIBER_MASTER'; PasswordDBSubscriber = 'PASSWORD'; HostDBSubscriber = 'HOSTBD'; UserNameShemeSubscriber = 'SIDBD'}
+
+$Subscriber1=$UserNameShemeSubscriber.UserNameSubscriber
+$Subscriber2=$UserNameShemeSubscriber.PasswordDBSubscriber
+$Subscriber3=$UserNameShemeSubscriber.HostDBSubscriber
+$Subscriber4=$UserNameShemeSubscriber.UserNameShemeSubscriber
+
+Foreach ($QuerySubscriber in [Array]$SqlQuerySubscriber -split ","){
+
+[Array]$ScriptsSubscriber = Get-ChildItem -Path "C:\Jenkins\workspace\push_build\*.MessageService.SqlScripts\$QuerySubscriber"
+[Array]$ScriptsSubscriber.FullName
+
+Foreach ($SelectSubscriber in [Array]$ScriptsSubscriber.FullName){
+
+C:\app\client\Администратор\product\12.2.0\client_1\sqlplus.exe $Subscriber1/$Subscriber2@"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$Subscriber3)(PORT=1521))(CONNECT_DATA=(UR=A)(SERVICE_NAME=$Subscriber4)))" @$SelectSubscriber
+
+}
+}
+}
+else
+{
+}
+
+##### прод
+if($UserNameShemeSubscriber -eq "SIDBD")
+{
+$UserNameShemeSubscriber = @{UserNameSubscriber = 'PUSH_SUBSCRIBER_MASTER'; PasswordDBSubscriber = 'PASSWORD'; HostDBSubscriber = 'HOSTBD'; UserNameShemeSubscriber = 'SIDBD'}
+
+$Subscriber1=$UserNameShemeSubscriber.UserNameSubscriber
+$Subscriber2=$UserNameShemeSubscriber.PasswordDBSubscriber
+$Subscriber3=$UserNameShemeSubscriber.HostDBSubscriber
+$Subscriber4=$UserNameShemeSubscriber.UserNameShemeSubscriber
+
+Foreach ($QuerySubscriber in [Array]$SqlQuerySubscriber -split ","){
+
+[Array]$ScriptsSubscriber = Get-ChildItem -Path "C:\Jenkins\workspace\push_build\*.MessageService.SqlScripts\$QuerySubscriber"
+[Array]$ScriptsSubscriber.FullName
+
+Foreach ($SelectSubscriber in [Array]$ScriptsSubscriber.FullName){
+
+C:\app\client\Администратор\product\12.2.0\client_1\sqlplus.exe $Subscriber1/$Subscriber2@"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=$Subscriber3)(PORT=1521))(CONNECT_DATA=(UR=A)(SERVICE_NAME=$Subscriber4)))" @$SelectSubscriber
+
+}
+}
+}
+else
+{
+}

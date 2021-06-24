@@ -1,0 +1,69 @@
+﻿#Копируем папки в папку C:\Logs
+$PathCopy="C:\inetpub\wwwroot\Push"
+$DestinationCopy="C:\Logs"
+
+[Array]$FindLogsFolder = (Get-ChildItem $PathCopy -Recurse -Directory -ErrorAction SilentlyContinue| Where-Object {$_.Name -eq "Logs"}).Parent
+
+foreach ($Folder in $FindLogsFolder){
+
+Copy-Item $Folder.FullName -Destination $DestinationCopy -Recurse -Force
+
+}
+
+
+#Архивируем логи
+$PathArch="C:\Logs"
+$DestinationArch="C:\Logs"
+
+[Array]$FindLogsFolder1 = (Get-ChildItem $PathArch -Recurse -Directory -ErrorAction SilentlyContinue| Where-Object {$_.Name -eq "Logs"}).Parent
+
+foreach ($Folder1 in $FindLogsFolder1){
+
+$Data=(Get-date -Format yyyyMMdd)+"_" + $Folder1
+
+Compress-Archive -Force -Path $Folder1.FullName -DestinationPath $DestinationArch\$Data.zip -CompressionLevel Optimal
+
+
+}
+
+#Удаляем скопированные папки логи
+$PathDel="C:\Logs"
+
+[Array]$FindLogs3 = (Get-ChildItem $PathDel -Recurse -Directory -ErrorAction SilentlyContinue| Where-Object {$_.Name -eq "Logs"}).Parent
+
+Remove-Item -Force -Recurse $FindLogs3.FullName
+
+
+#Удаляем старые логи
+
+$Data1 = (get-date).AddDays(-1).ToString('yyyy-MM-dd')
+
+Remove-Item -Exclude current.log -Force -Recurse C:\inetpub\wwwroot\Push\Coordinator\Logs\*$Data1*.log
+Remove-Item -Exclude current.log -Force -Recurse C:\inetpub\wwwroot\Push\PushTransport\Logs\*$Data1*.log
+Remove-Item -Exclude current.log -Force -Recurse C:\inetpub\wwwroot\Push\Subscriber\Logs\*$Data1*.log
+Remove-Item -Exclude current.log -Force -Recurse C:\inetpub\wwwroot\Push\Content\Logs\*$Data1*.log
+
+#Подключаем шару
+$Z = New-Object -ComObject WScript.Network 
+$Z.MapNetworkDrive( "Z:", "\\domain.ru\SoftWare\FrontLine\Mobility\LogArchive\log_Push\hostname", "true", "domain\username", "password" )
+
+#Переносим логи на шару
+Move-Item -Path C:\Logs\*.zip -Destination Z:\
+
+#Удаляем логи на шаре старше 7 дней
+$Data2=Get-date
+$Days=7
+$TargetFolder = "Z:"
+$Extension = "*.zip"
+$LastWrite = $Data2.AddDays(-$Days)
+$Files = Get-Childitem $TargetFolder -Recurse | Where{$_.LastWriteTime -le "$LastWrite"}
+foreach ($File in $Files)
+{
+ if ($File -ne $NULL)
+ {
+  Remove-Item $File.FullName | out-null
+ }
+ }
+
+#отключаем шару
+$Z.RemoveNetworkDrive( "Z:" )

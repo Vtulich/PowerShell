@@ -1,0 +1,63 @@
+param
+(
+$NameArchive,
+$ServerName,
+$usernameVariable,
+$passwordVariable
+)
+
+Write-Host "======================================================================================="
+Write-Host "Connecting to the server $ServerName"
+Write-Host "======================================================================================="
+$Password = $passwordVariable | ConvertTo-SecureString -AsPlainText -Force
+$creddentials = New-Object System.Management.Automation.PSCredential -ArgumentList $usernameVariable, $Password
+
+Invoke-Command -ComputerName $ServerName -Authentication Basic -credential $creddentials -ArgumentList $NameArchive -ScriptBlock {
+
+
+param
+(
+$NameArchive
+)
+
+#Определяем папку с Service
+$folderService="C:\Utils"
+#Указываем папку с бекапом
+$folderbackupService="C:\backup\$NameArchive\Service"
+
+Write-Host "======================================================================================="
+Write-Host "Stop Service"
+Write-Host "======================================================================================="
+
+stop-service "* push channel service"
+
+Write-Host "======================================================================================="
+Write-Host "Wait 60 sec"
+Write-Host "======================================================================================="
+
+Wait-Event -Timeout 60
+
+Write-Host "======================================================================================="
+Write-Host "Remove old file"
+Write-Host "======================================================================================="
+
+Remove-Item -recurse -force -Path $folderService\* -Exclude "Logs", "LogsETL"
+
+Write-Host "======================================================================================="
+Write-Host "Copy new file"
+Write-Host "======================================================================================="
+
+copy-item -Force -recurse $folderbackupService\* -destination $folderService\
+
+Write-Host "======================================================================================="
+Write-Host "Start service"
+Write-Host "======================================================================================="
+
+start-service "* push channel service"
+
+Write-Host "======================================================================================="
+Write-Host "Wait 25 sec"
+Write-Host "======================================================================================="
+Wait-Event -Timeout 25
+
+}

@@ -1,0 +1,36 @@
+param(
+$ServerName,
+$usernameVariable,
+$passwordVariable
+)
+
+Write-Host "======================================================================================="
+Write-Host "Connecting to the server $ServerName"
+Write-Host "======================================================================================="
+
+$Password = $passwordVariable | ConvertTo-SecureString -AsPlainText -Force
+$creddentials = New-Object System.Management.Automation.PSCredential -ArgumentList $usernameVariable, $Password
+
+Invoke-Command -ComputerName $ServerName -Authentication Basic -credential $creddentials -ScriptBlock {
+
+Write-Host "======================================================================================="
+Write-Host "Start Stub"
+Write-Host "======================================================================================="
+
+start-service "*.MessageService.Load.Apns"
+
+Write-Host "======================================================================================="
+Write-Host "Wait 15 sec"
+Write-Host "======================================================================================="
+
+Wait-Event -Timeout 15
+
+start-service "*.MessageService.Load.Ccs"
+
+Write-Host "======================================================================================="
+Write-Host "Wait 15 sec"
+Write-Host "======================================================================================="
+
+Wait-Event -Timeout 15
+
+}

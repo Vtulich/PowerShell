@@ -1,0 +1,50 @@
+param
+(
+$NameArchive,
+$ServerName,
+$usernameVariable,
+$passwordVariable
+)
+
+Write-Host "======================================================================================="
+Write-Host "Connecting to the server $ServerName"
+Write-Host "======================================================================================="
+$Password = $passwordVariable | ConvertTo-SecureString -AsPlainText -Force
+$creddentials = New-Object System.Management.Automation.PSCredential -ArgumentList $usernameVariable, $Password
+
+Invoke-Command -ComputerName $ServerName -Authentication Basic -credential $creddentials -ArgumentList $NameArchive -ScriptBlock {
+
+
+param
+(
+$NameArchive
+)
+
+#Определяем папку с Coordinator
+$folderCoordinator="C:\inetpub\wwwroot\Push\Coordinator"
+#Указываем папку с бекапом
+$folderbackupCoordinator="C:\Backup\$NameArchive\Coordinator"
+
+Write-Host "======================================================================================="
+Write-Host "Stop Service IIS"
+Write-Host "======================================================================================="
+stop-service "W3SVC"
+Write-Host "Wait 15 sec"
+Wait-Event -Timeout 15
+
+Write-Host "======================================================================================="
+Write-Host "Remove old file"
+Write-Host "======================================================================================="
+Remove-Item -recurse -force -Path $folderCoordinator\* -Exclude "Logs", "uploads", "LogsETL"
+
+Write-Host "======================================================================================="
+Write-Host "Copy new file"
+Write-Host "======================================================================================="
+copy-item -Force -recurse $folderbackupCoordinator\* -destination $folderCoordinator\
+
+Write-Host "======================================================================================="
+Write-Host "Start service IIS"
+Write-Host "======================================================================================="
+start-service "W3SVC"
+
+}

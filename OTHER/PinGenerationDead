@@ -1,0 +1,12 @@
+﻿$TimeLog = Get-Item C:\Logs\production\reg\*.log | Foreach {$_.LastWriteTime}
+$TimeLog = get-date -Format 'HH:mm'
+if($TimeLog -ne (Get-Date -Format 'HH:mm'))
+{
+$From = "PinGeneration@domain.ru"
+$To ="name@domain.ru"
+$Subject = "PinGeneration"
+$Body = "PinGeneration is Dead"
+$SMTPServer = "mxs.domain.ru"
+Send-MailMessage -From $From -to $To -Subject $Subject `
+-Body $Body -SmtpServer $SMTPServer -Encoding UTF8
+}
